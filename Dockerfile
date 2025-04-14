@@ -13,4 +13,4 @@ COPY . .
 
 RUN pip install -r requirements.txt --no-cache-dir --prefer-binary
 
-CMD ["python", "motion_detector.py"]
+CMD ["python", "app.py"]
