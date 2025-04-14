@@ -8,6 +8,7 @@ from datetime import datetime
 STREAM_URL = os.getenv("STREAM_URL", "http://camera:5000/video_feed")
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 OUTPUT_DIR = "/data"
+MOTION_SENSITIVITY = int(os.getenv("MOTION_SENSITIVITY", "1000"))
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -59,7 +60,7 @@ def detect_motion():
 
         motion_detected = False
         for contour in contours:
-            if cv2.contourArea(contour) < 1000:
+            if cv2.contourArea(contour) < MOTION_SENSITIVITY:
                 continue
             motion_detected = True
 
