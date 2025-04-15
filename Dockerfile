@@ -1,16 +1,11 @@
-FROM python:3.11-bullseye
+FROM debian:bullseye
 
-ENV STREAM_URL=http://camera:5000/video_feed
-ENV DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/123456789012345678/abcdefghijklmnopqrstuvwxyz
+RUN apt update && \
+    apt install -y motion curl ffmpeg && \
+    apt clean
 
-RUN apt-get update && apt-get install -y \
-    libglib2.0-0 libsm6 libxext6 libxrender-dev ffmpeg \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+COPY motion.conf /etc/motion/motion.conf
+COPY on_picture_save.sh /usr/local/bin/on_picture_save.sh
+RUN chmod +x /usr/local/bin/on_picture_save.sh
 
-WORKDIR /app
-COPY . .
-
-RUN pip install -r requirements.txt --no-cache-dir --prefer-binary
-
-CMD ["python", "app.py"]
+CMD ["motion", "-n"]
