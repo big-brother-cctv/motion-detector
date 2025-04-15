@@ -8,7 +8,8 @@ from datetime import datetime
 STREAM_URL = os.getenv("STREAM_URL", "http://camera:5000/video_feed")
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 OUTPUT_DIR = "/data"
-MOTION_SENSITIVITY = int(os.getenv("MOTION_SENSITIVITY", "1000"))
+MOTION_SENSITIVITY = int(os.getenv("MOTION_SENSITIVITY", "2000"))
+MOTION_COUNT_THRESHOLD = int(os.getenv("MOTION_COUNT_THRESHOLD", "7"))
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -50,6 +51,8 @@ def detect_motion():
     ret, frame1 = cap.read()
     ret, frame2 = cap.read()
 
+    motion_counter = 0
+
     while cap.isOpened():
         diff = cv2.absdiff(frame1, frame2)
         gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
@@ -65,10 +68,18 @@ def detect_motion():
             motion_detected = True
 
         if motion_detected:
-            print("🚨 Motion detected!")
-            filename = save_frame(frame2)
+            motion_counter += 1
+            print(f"📈 Motion counter: {motion_counter}/{MOTION_COUNT_THRESHOLD}")
 
-            notify_discord("🚨 Movimiento detectado 📸", image_path=filename)
+            if motion_counter >= MOTION_COUNT_THRESHOLD:
+                print("🚨 Motion threshold reached! Capturing...")
+                filename = save_frame(frame2)
+                notify_discord("🚨 Movimiento detectado 📸", image_path=filename)
+                motion_counter = 0  # Reset after detection
+        else:
+            if motion_counter > 0:
+                print("🔁 Motion lost, counter reset.")
+            motion_counter = 0
 
         frame1 = frame2
         ret, frame2 = cap.read()
