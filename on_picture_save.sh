@@ -8,5 +8,5 @@ if [ -z "$DISCORD_WEBHOOK" ]; then
 fi
 
 curl -F "file=@${FILE}" \
-     -F "content=¡Movimiento detectado por Motion!" \
+     -F "content=Cat detected!📸" \
      "$DISCORD_WEBHOOK"
