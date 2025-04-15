@@ -1,5 +1,6 @@
 import requests
 import os
+import io
 from config.settings import DISCORD_WEBHOOK_URL
 
 def notify_discord(message, image_path=None, image_bytes=None):
