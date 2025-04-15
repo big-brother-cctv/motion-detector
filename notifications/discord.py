@@ -1,16 +1,15 @@
-"""Sends notifications to Discord."""
-
 import requests
 import os
 from config.settings import DISCORD_WEBHOOK_URL
 
-def notify_discord(message, image_path=None):
+def notify_discord(message, image_path=None, image_bytes=None):
     """
     Send a message to a Discord webhook, optionally with an image.
 
     Args:
         message (str): The message content to send.
         image_path (str, optional): Path to the image file to attach.
+        image_bytes (BytesIO, optional): In-memory image to attach.
     """
     if not DISCORD_WEBHOOK_URL:
         print("⚠️ No DISCORD_WEBHOOK_URL set, skipping Discord notification.")
@@ -19,7 +18,11 @@ def notify_discord(message, image_path=None):
     data = {"content": message}
     files = {}
 
-    if image_path and os.path.exists(image_path):
+    # If image is in memory, use image_bytes
+    if image_bytes:
+        files["file"] = ("motion.jpg", image_bytes, "image/jpeg")
+    # If image is in disk, use image_path
+    elif image_path and os.path.exists(image_path):
         files["file"] = open(image_path, "rb")
 
     try:
@@ -30,4 +33,8 @@ def notify_discord(message, image_path=None):
         print("❌ Error sending to Discord:", e)
     finally:
         if files:
-            files["file"].close()
+            if isinstance(files["file"], io.BytesIO):
+                # No need to close BytesIO, it's in memory
+                pass
+            else:
+                files["file"].close()
