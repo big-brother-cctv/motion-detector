@@ -13,7 +13,7 @@ def detect_motion():
     Captures and sends a notification when the motion counter reaches the threshold.
     """
     print(f"Connecting to stream at {STREAM_URL}")
-    cap = cv2.VideoCapture(STREAM_URL)
+    cap = cv2.VideoCapture(STREAM_URL, cv2.CAP_FFMPEG)
     time.sleep(2)
 
     ret, frame1 = cap.read()
