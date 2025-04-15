@@ -37,8 +37,11 @@ def detect_motion():
 
             if motion_counter >= MOTION_COUNT_THRESHOLD:
                 print("🚨 Motion threshold reached! Capturing...")
-                filename = save_frame(frame2)
-                notify_discord("🚨 Motion detected 📸", image_path=filename)
+                output = save_frame(frame2)
+                if isinstance(output, str):
+                    notify_discord("🚨 Motion detected 📸", image_path=output)
+                else:
+                    notify_discord("🚨 Motion detected 📸", image_bytes=output)
                 motion_counter = 0
         else:
             if motion_counter > 0:
