@@ -2,7 +2,7 @@
 
 FILE=$1
 COOLDOWN_FILE="/tmp/motion_last_notification"
-COOLDOWN_SECONDS="${DISCORD_COOLDOWN:-30}"
+COOLDOWN_SECONDS="${COOLDOWN_SECONDS:-30}"
 
 if [ -z "$DISCORD_WEBHOOK" ]; then
   echo "DISCORD_WEBHOOK not set"
