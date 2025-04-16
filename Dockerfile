@@ -5,7 +5,7 @@ RUN apt update && \
     apt clean
 
 COPY motion.conf /etc/motion/motion.conf
-COPY on_picture_save.sh /usr/local/bin/on_picture_save.sh
-RUN chmod +x /usr/local/bin/on_picture_save.sh
+COPY on_event_end.sh /usr/local/bin/on_event_end.sh
+RUN chmod +x /usr/local/bin/on_event_end.sh
 
 CMD ["motion", "-n"]
