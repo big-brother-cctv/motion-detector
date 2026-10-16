@@ -2,11 +2,13 @@
 
 FILE=$1
 COOLDOWN_FILE="/tmp/motion_last_notification"
-COOLDOWN_SECONDS="${COOLDOWN_SECONDS:-30}"
+COOLDOWN_SECONDS="${COOLDOWN_SECONDS:-15}"
+API_URL="${API_URL:-http://api:8080/api/alerts}"
+INTERNAL_TOKEN="${INTERNAL_TOKEN:-internal-token-dev}"
+CAMERA_NAME="${CAMERA_NAME:-camera}"
 
-if [ -z "$DISCORD_WEBHOOK" ]; then
-  echo "DISCORD_WEBHOOK not set"
-  exit 1
+if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then
+  exit 0
 fi
 
 now=$(date +%s)
@@ -14,11 +16,21 @@ last=$(cat "$COOLDOWN_FILE" 2>/dev/null || echo 0)
 diff=$((now - last))
 
 if [ "$diff" -ge "$COOLDOWN_SECONDS" ]; then
-  curl -F "file=@${FILE}" \
-       -F "content=Cat detected!📸" \
-       "$DISCORD_WEBHOOK"
+  # Alerta local 100% self-hosted
+  echo "Enviando snapshot a Big Brother API: $API_URL"
+  curl -s -F "image=@${FILE}" \
+       -F "camera_name=${CAMERA_NAME}" \
+       -F "label=motion" \
+       -F "token=${INTERNAL_TOKEN}" \
+       "$API_URL"
+
+  if [ -n "$DISCORD_WEBHOOK" ]; then
+    curl -s -F "file=@${FILE}" \
+         -F "content=🚨 Movimiento detectado! 📸" \
+         "$DISCORD_WEBHOOK" >/dev/null 2>&1 || true
+  fi
 
   echo "$now" > "$COOLDOWN_FILE"
 else
-  echo "Notification skipped (cooldown: ${diff}s elapsed, requires ${COOLDOWN_SECONDS}s)"
+  echo "Alerta omitida (cooldown: ${diff}s transcurridos, requiere ${COOLDOWN_SECONDS}s)"
 fi
