@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.5.1...v1.6.0) (2026-10-16)
+
+
+### Features
+
+* integrate motion scripts with self-hosted Big Brother API and make Discord webhooks optional ([4eaae02](https://github.com/big-brother-cctv/motion-detector/commit/4eaae02d731e0284aa0f9b9d8d76e825178774f6))
+
 ## [1.5.1](https://github.com/big-brother-cctv/motion-detector/compare/v1.5.0...v1.5.1) (2026-10-16)
 
 
