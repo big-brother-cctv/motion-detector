@@ -1,8 +1,13 @@
-FROM debian:bullseye
+FROM debian:bookworm-slim
 
-RUN apt update && \
-    apt install -y motion curl ffmpeg && \
-    apt clean
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    motion \
+    curl \
+    ffmpeg \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY motion.conf /etc/motion/motion.conf
 COPY on_event_end.sh /usr/local/bin/on_event_end.sh
