@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.7.1...v1.8.0) (2026-10-18)
+
+
+### Features
+
+* refactor motion detector to support dynamic multi-camera configuration via API sync ([727953d](https://github.com/big-brother-cctv/motion-detector/commit/727953de64ed9a642159f8bc3f2476930564ed7b))
+
 ## [1.7.1](https://github.com/big-brother-cctv/motion-detector/compare/v1.7.0...v1.7.1) (2026-10-18)
 
 
