@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/big-brother-cctv/motion-detector/compare/v1.7.0...v1.7.1) (2026-10-18)
+
+
+### Bug Fixes
+
+* copy motion.conf to tmp to prevent device busy errors with Kubernetes mounts ([2bab156](https://github.com/big-brother-cctv/motion-detector/commit/2bab156d5391f0899dabc908bd4b2205dbf9575e))
+
 ## [1.7.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.6.0...v1.7.0) (2026-10-18)
 
 
