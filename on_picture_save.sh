@@ -34,3 +34,7 @@ if [ "$diff" -ge "$COOLDOWN_SECONDS" ]; then
 else
   echo "Alerta omitida (cooldown: ${diff}s transcurridos, requiere ${COOLDOWN_SECONDS}s)"
 fi
+
+# Limpieza periódica de fotos antiguas en /tmp/motion_images (>10 minutos)
+find /tmp/motion_images -name "*.jpg" -mmin +10 -delete 2>/dev/null || true
+
