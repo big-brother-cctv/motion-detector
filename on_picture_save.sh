@@ -1,11 +1,11 @@
 #!/bin/bash
 
 FILE=$1
-COOLDOWN_FILE="/tmp/motion_last_notification"
+CAMERA_NAME="${2:-${CAMERA_NAME:-camera}}"
+COOLDOWN_FILE="/tmp/motion_last_notification_${CAMERA_NAME}"
 COOLDOWN_SECONDS="${COOLDOWN_SECONDS:-15}"
 API_URL="${API_URL:-http://api:8080/api/alerts}"
 INTERNAL_TOKEN="${INTERNAL_TOKEN:-internal-token-dev}"
-CAMERA_NAME="${CAMERA_NAME:-camera}"
 
 if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then
   exit 0
