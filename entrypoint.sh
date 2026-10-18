@@ -3,7 +3,8 @@ set -e
 
 mkdir -p /tmp/motion_images
 
-CONF_FILE="/etc/motion/motion.conf"
+CONF_SOURCE="/etc/motion/motion.conf"
+CONF_FILE="/tmp/motion.conf"
 
 NETCAM_URL="${NETCAM_URL:-${STREAM_URL:-rtsp://mediamtx:8554/${CAMERA_NAME:-camera}}}"
 CAMERA_NAME="${CAMERA_NAME:-camera}"
@@ -18,6 +19,12 @@ echo "[MOTION DETECTOR] Nodo cámara: ${CAMERA_NAME}"
 echo "[MOTION DETECTOR] Origen RTSP: ${NETCAM_URL}"
 echo "[MOTION DETECTOR] API Alertas: ${API_URL:-http://api:8080/api/alerts}"
 echo "=========================================================="
+
+# Copiar a /tmp/motion.conf para evitar errores de "Device or resource busy"
+# causados por sed -i sobre archivos montados en Kubernetes (ConfigMap / subPath bind mounts)
+if [ -f "$CONF_SOURCE" ]; then
+  cp "$CONF_SOURCE" "$CONF_FILE"
+fi
 
 if [ -f "$CONF_FILE" ]; then
   sed -i "s|^netcam_url .*|netcam_url ${NETCAM_URL}|" "$CONF_FILE"
