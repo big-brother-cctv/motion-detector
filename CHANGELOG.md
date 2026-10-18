@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.6.0...v1.7.0) (2026-10-18)
+
+
+### Features
+
+* add container entrypoint for dynamic motion configuration and image cleanup ([cd9ee65](https://github.com/big-brother-cctv/motion-detector/commit/cd9ee6520e4c9019adb4d7a9fd8038fa2e67daac))
+
 ## [1.6.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.5.1...v1.6.0) (2026-10-16)
 
 
