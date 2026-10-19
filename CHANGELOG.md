@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.10.0...v1.11.0) (2026-10-19)
+
+
+### Features
+
+* improve motion detection reliability and filter out corrupted or artifacted image snapshots ([16053fa](https://github.com/big-brother-cctv/motion-detector/commit/16053faff4f6c1ec392ebd2f9c1636d53256c6b5))
+
 ## [1.10.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.9.0...v1.10.0) (2026-10-19)
 
 
