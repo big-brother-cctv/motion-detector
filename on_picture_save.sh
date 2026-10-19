@@ -11,6 +11,37 @@ if [ -z "$FILE" ] || [ ! -f "$FILE" ] || [ ! -s "$FILE" ]; then
   exit 0
 fi
 
+# Validar tamaño mínimo de archivo (descartar JPEGs corruptos o truncados < 4KB)
+FILE_SIZE=$(wc -c < "$FILE" 2>/dev/null || echo 0)
+if [ "$FILE_SIZE" -lt 4000 ]; then
+  echo "[DISCARD] Snapshot demasiado pequeño o corrupto (${FILE_SIZE} bytes): $FILE"
+  rm -f "$FILE"
+  exit 0
+fi
+
+# Detectar y descartar fotogramas verdes o negros producidos por anomalías del decodificador H.264
+if which ffmpeg >/dev/null 2>&1 && which od >/dev/null 2>&1; then
+  RGB=$(ffmpeg -nostdin -v error -i "$FILE" -vf "scale=1:1" -f rawvideo -pix_fmt rgb24 - 2>/dev/null | od -An -t u1 2>/dev/null)
+  if [ -n "$RGB" ]; then
+    set -- $RGB
+    r=${1:-0}
+    g=${2:-0}
+    b=${3:-0}
+    # YUV=0/sin sincronizar decodifica exactamente a R=0 G=138 B=0 (verde digital sólido)
+    if [ "$r" -lt 25 ] && [ "$b" -lt 25 ] && [ "$g" -gt 60 ]; then
+      echo "[DISCARD] Fotograma verde de artefacto digital descartado para [${CAMERA_NAME}] ($FILE - RGB: $r,$g,$b)"
+      rm -f "$FILE"
+      exit 0
+    fi
+    # Fotograma completamente negro (< 4 en todos los canales)
+    if [ "$r" -lt 4 ] && [ "$g" -lt 4 ] && [ "$b" -lt 4 ]; then
+      echo "[DISCARD] Fotograma negro vacío descartado para [${CAMERA_NAME}] ($FILE)"
+      rm -f "$FILE"
+      exit 0
+    fi
+  fi
+fi
+
 now=$(date +%s)
 last=$(cat "$COOLDOWN_FILE" 2>/dev/null || echo 0)
 diff=$((now - last))

@@ -16,10 +16,15 @@ daemon off
 stream_localhost off
 webcontrol_port 8083
 webcontrol_localhost off
-picture_output on
+picture_output best
 event_gap 10
 movie_output off
 camera_dir /tmp/motion/conf.d
+netcam_params rtsp_transport=tcp
+noise_level 32
+noise_tune on
+despeckle_filter EedDl
+picture_quality 85
 EOF
 
   configured=0
@@ -43,8 +48,10 @@ camera_name ${cam_name}
 target_dir /tmp/motion_images/${cam_name}
 picture_filename ${cam_name}_%Y-%m-%d_%H-%M-%S
 netcam_url ${rtsp_url}
+netcam_params rtsp_transport=tcp
 threshold ${threshold}
 minimum_motion_frames ${frames}
+picture_output best
 on_picture_save /usr/local/bin/on_picture_save.sh %f ${cam_name}
 CAM_EOF
           echo "[MOTION] Cámara unificada configurada: ${cam_name} (ID: ${cam_id}, ${rtsp_url}) - Umbral: ${threshold}px"
@@ -66,8 +73,10 @@ camera_name ${DEFAULT_NAME}
 target_dir /tmp/motion_images/${DEFAULT_NAME}
 picture_filename ${DEFAULT_NAME}_%Y-%m-%d_%H-%M-%S
 netcam_url ${DEFAULT_URL}
+netcam_params rtsp_transport=tcp
 threshold ${THRESHOLD:-350}
 minimum_motion_frames ${MIN_MOTION_FRAMES:-2}
+picture_output best
 on_picture_save /usr/local/bin/on_picture_save.sh %f ${DEFAULT_NAME}
 DEF_EOF
     echo "[MOTION] Modo fallback/local: ${DEFAULT_NAME} (${DEFAULT_URL})"
