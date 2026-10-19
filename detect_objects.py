@@ -41,14 +41,6 @@ def detect(image_path: str):
     try:
         import onnxruntime as ort
 
-        # Load and resize image to 640x640 for YOLOv8
-        img = Image.open(image_path).convert("RGB")
-        img_resized = img.resize((640, 640), Image.Resampling.BILINEAR)
-        img_data = np.array(img_resized, dtype=np.float32) / 255.0
-        # Transpose from (H, W, C) to (1, C, H, W)
-        img_data = np.transpose(img_data, (2, 0, 1))
-        input_tensor = np.expand_dims(img_data, axis=0)
-
         # Run ONNX inference on CPU with 2 threads max to leave room for other apps
         opts = ort.SessionOptions()
         opts.intra_op_num_threads = 2
@@ -60,12 +52,23 @@ def detect(image_path: str):
             sess_options=opts,
             providers=["CPUExecutionProvider"]
         )
-        input_name = session.get_inputs()[0].name
-        outputs = session.run(None, {input_name: input_tensor})
+        input_meta = session.get_inputs()[0]
+        input_type = input_meta.type
+        dtype = np.float16 if "float16" in input_type else np.float32
+
+        # Load and resize image to 640x640 for YOLOv8
+        img = Image.open(image_path).convert("RGB")
+        img_resized = img.resize((640, 640), Image.Resampling.BILINEAR)
+        img_data = (np.array(img_resized, dtype=np.float32) / 255.0).astype(dtype)
+        # Transpose from (H, W, C) to (1, C, H, W)
+        img_data = np.transpose(img_data, (2, 0, 1))
+        input_tensor = np.expand_dims(img_data, axis=0)
+
+        outputs = session.run(None, {input_meta.name: input_tensor})
         predictions = outputs[0]  # shape: (1, 84, 8400)
 
-        # Transpose to (8400, 84)
-        preds = predictions[0].T
+        # Transpose to (8400, 84) and compute in float32
+        preds = predictions[0].T.astype(np.float32)
         scores = preds[:, 4:]  # (8400, 80)
 
         class_ids = np.argmax(scores, axis=1)
