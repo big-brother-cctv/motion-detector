@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.11.0...v1.12.0) (2026-10-19)
+
+
+### Features
+
+* add camera resolution config, stream tuning parameters, and corrupt frame filtering ([249c61c](https://github.com/big-brother-cctv/motion-detector/commit/249c61c83eaaf17a08b0a4bf342d7194c8b8cacc))
+
 ## [1.11.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.10.0...v1.11.0) (2026-10-19)
 
 
