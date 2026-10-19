@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.1](https://github.com/big-brother-cctv/motion-detector/compare/v1.17.0...v1.17.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* update confidence threshold and implement letterbox image resizing for YOLOv8 ([b1f3331](https://github.com/big-brother-cctv/motion-detector/commit/b1f33316df9cc80e502fbe67f907f6c2f1e3ace1))
+
 ## [1.17.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.16.0...v1.17.0) (2026-10-19)
 
 
