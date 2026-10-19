@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.9.0...v1.10.0) (2026-10-19)
+
+
+### Features
+
+* add comprehensive documentation for motion-detector microservice in README ([15ff5b7](https://github.com/big-brother-cctv/motion-detector/commit/15ff5b70fd1b8ed6d0275ace9131322ed1d73c37))
+
 ## [1.9.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.8.1...v1.9.0) (2026-10-19)
 
 
