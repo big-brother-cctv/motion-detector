@@ -48,11 +48,33 @@ if which ffmpeg >/dev/null 2>&1 && which od >/dev/null 2>&1; then
       d23=$(( y2 > y3 ? y2 - y3 : y3 - y2 ))
       d34=$(( y3 > y4 ? y3 - y4 : y4 - y3 ))
       d45=$(( y4 > y5 ? y4 - y5 : y5 - y4 ))
-      if [ "$d23" -le 2 ] && [ "$d34" -le 2 ] && [ "$d45" -le 2 ]; then
+      if [ "$d23" -eq 0 ] && [ "$d34" -eq 0 ] && [ "$d45" -eq 0 ]; then
         echo "[DISCARD] Fotograma con barrido vertical (smear/macroblocks corruptos) descartado para [${CAMERA_NAME}] ($FILE - Rows: $y1 $y2 $y3 $y4 $y5)"
         rm -f "$FILE"
         exit 0
       fi
+    fi
+
+    # Detectar y descartar artefactos cromáticos por pérdida de macroblocks H.264 (bandas magenta/rosa o verde fosforito en bordes)
+    EDGE_RGB=$(ffmpeg -nostdin -v error -i "$FILE" -vf "split=2[l][r]; [l]crop=in_w*0.2:in_h:0:0,scale=1:2[l2]; [r]crop=in_w*0.2:in_h:in_w*0.8:0,scale=1:2[r2]; [l2][r2]vstack" -f rawvideo -pix_fmt rgb24 - 2>/dev/null | od -An -t u1 2>/dev/null)
+    if [ -n "$EDGE_RGB" ]; then
+      set -- $EDGE_RGB
+      while [ $# -ge 3 ]; do
+        cr=$1; cg=$2; cb=$3
+        shift 3
+        # Ruido magenta/rosa por desincronización de crominancia U/V
+        if [ "$cr" -gt 50 ] && [ "$cr" -gt $(( cg * 3 / 2 )) ] && [ "$cb" -gt $(( cg * 11 / 10 )) ]; then
+          echo "[DISCARD] Fotograma con corrupción cromática magenta/rosa descartado para [${CAMERA_NAME}] ($FILE - RGB: $cr,$cg,$cb)"
+          rm -f "$FILE"
+          exit 0
+        fi
+        # Ruido verde por decodificación YUV fuera de rango
+        if [ "$cg" -gt 60 ] && [ "$cg" -gt $(( cr * 3 / 2 )) ] && [ "$cg" -gt $(( cb * 3 / 2 )) ]; then
+          echo "[DISCARD] Fotograma con corrupción cromática verde descartado para [${CAMERA_NAME}] ($FILE - RGB: $cr,$cg,$cb)"
+          rm -f "$FILE"
+          exit 0
+        fi
+      done
     fi
   fi
 fi
