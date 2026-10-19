@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.15.0...v1.16.0) (2026-10-19)
+
+
+### Features
+
+* dynamically determine model input precision and cast image tensors accordingly in object detection ([9235abe](https://github.com/big-brother-cctv/motion-detector/commit/9235abe6ce6a5629f0a26b99555599b15c719a06))
+
 ## [1.15.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.14.0...v1.15.0) (2026-10-19)
 
 
