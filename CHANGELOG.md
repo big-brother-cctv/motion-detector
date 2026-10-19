@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.13.0...v1.14.0) (2026-10-19)
+
+
+### Features
+
+* add chromatic artifact and strict vertical smear detection to discard corrupted frames ([e05f853](https://github.com/big-brother-cctv/motion-detector/commit/e05f853798259679cd446b87ed5e5bb9dd14bdc8))
+
 ## [1.13.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.12.0...v1.13.0) (2026-10-19)
 
 
