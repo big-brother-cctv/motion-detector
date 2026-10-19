@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.17.1...v1.18.0) (2026-10-19)
+
+
+### Features
+
+* add configurable AI modes, confidence thresholds, and cooldowns per camera in motion detector scripts ([1c2df6f](https://github.com/big-brother-cctv/motion-detector/commit/1c2df6f91b639518e336b9670de5a2b13ff357f4))
+
 ## [1.17.1](https://github.com/big-brother-cctv/motion-detector/compare/v1.17.0...v1.17.1) (2026-10-19)
 
 
