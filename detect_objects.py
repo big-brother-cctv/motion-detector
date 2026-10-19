@@ -10,7 +10,7 @@ import numpy as np
 from PIL import Image
 
 MODEL_PATH = os.environ.get("AI_MODEL_PATH", "/etc/motion/models/yolov8n.onnx")
-CONF_THRESHOLD = float(os.environ.get("AI_CONF_THRESHOLD", "0.40"))
+CONF_THRESHOLD = float(os.environ.get("AI_CONF_THRESHOLD", "0.28"))
 TARGET_CLASSES = os.environ.get(
     "AI_TARGET_CLASSES", "person,car,truck,bus,motorcycle,bicycle,dog,cat"
 ).lower().split(",")
@@ -56,10 +56,15 @@ def detect(image_path: str):
         input_type = input_meta.type
         dtype = np.float16 if "float16" in input_type else np.float32
 
-        # Load and resize image to 640x640 for YOLOv8
+        # Load and resize with aspect-ratio preservation (letterbox to 640x640)
         img = Image.open(image_path).convert("RGB")
-        img_resized = img.resize((640, 640), Image.Resampling.BILINEAR)
-        img_data = (np.array(img_resized, dtype=np.float32) / 255.0).astype(dtype)
+        w, h = img.size
+        scale = min(640 / w, 640 / h)
+        new_w, new_h = max(1, int(w * scale)), max(1, int(h * scale))
+        img_resized = img.resize((new_w, new_h), Image.Resampling.BILINEAR)
+        letterbox = Image.new("RGB", (640, 640), (114, 114, 114))
+        letterbox.paste(img_resized, ((640 - new_w) // 2, (640 - new_h) // 2))
+        img_data = (np.array(letterbox, dtype=np.float32) / 255.0).astype(dtype)
         # Transpose from (H, W, C) to (1, C, H, W)
         img_data = np.transpose(img_data, (2, 0, 1))
         input_tensor = np.expand_dims(img_data, axis=0)
