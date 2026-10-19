@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.12.0...v1.13.0) (2026-10-19)
+
+
+### Features
+
+* integrate YOLOv8 ONNX object detection filter for smart motion alerts ([24a5465](https://github.com/big-brother-cctv/motion-detector/commit/24a5465a3728fba79e6f1e57fb7698552a1c6334))
+
 ## [1.12.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.11.0...v1.12.0) (2026-10-19)
 
 
