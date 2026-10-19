@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.16.0...v1.17.0) (2026-10-19)
+
+
+### Features
+
+* download pre-optimized YOLOv8n ONNX model during Docker build ([531cedc](https://github.com/big-brother-cctv/motion-detector/commit/531cedc43c10ce5ac104dafc78b150bdd76ba9f8))
+
 ## [1.16.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.15.0...v1.16.0) (2026-10-19)
 
 
