@@ -5,9 +5,9 @@ CAMERA_NAME="${2:-${CAMERA_NAME:-camera}}"
 COOLDOWN_FILE="/tmp/motion_last_notification_${CAMERA_NAME}"
 COOLDOWN_SECONDS="${COOLDOWN_SECONDS:-15}"
 API_URL="${API_URL:-http://api:8080/api/alerts}"
-INTERNAL_TOKEN="${INTERNAL_TOKEN:-internal-token-dev}"
+INTERNAL_TOKEN="${INTERNAL_TOKEN:-internal-token-pro}"
 
-if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then
+if [ -z "$FILE" ] || [ ! -f "$FILE" ] || [ ! -s "$FILE" ]; then
   exit 0
 fi
 
@@ -17,7 +17,7 @@ diff=$((now - last))
 
 if [ "$diff" -ge "$COOLDOWN_SECONDS" ]; then
   # Alerta local 100% self-hosted
-  echo "Enviando snapshot a Big Brother API: $API_URL"
+  echo "Enviando snapshot de [${CAMERA_NAME}] ($FILE) a Big Brother API: $API_URL"
   curl -s -F "image=@${FILE}" \
        -F "camera_name=${CAMERA_NAME}" \
        -F "label=motion" \
@@ -26,7 +26,7 @@ if [ "$diff" -ge "$COOLDOWN_SECONDS" ]; then
 
   if [ -n "$DISCORD_WEBHOOK" ]; then
     curl -s -F "file=@${FILE}" \
-         -F "content=🚨 Movimiento detectado! 📸" \
+         -F "content=🚨 Movimiento detectado en ${CAMERA_NAME}! 📸" \
          "$DISCORD_WEBHOOK" >/dev/null 2>&1 || true
   fi
 
