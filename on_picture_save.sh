@@ -39,6 +39,21 @@ if which ffmpeg >/dev/null 2>&1 && which od >/dev/null 2>&1; then
       rm -f "$FILE"
       exit 0
     fi
+
+    # Detectar y descartar bandas verticales / smear por pérdida de paquetes H.264 (filas inferiores casi idénticas)
+    ROWS=$(ffmpeg -nostdin -v error -i "$FILE" -vf "scale=1:5" -f rawvideo -pix_fmt gray - 2>/dev/null | od -An -t u1 2>/dev/null)
+    if [ -n "$ROWS" ]; then
+      set -- $ROWS
+      y1=${1:-0}; y2=${2:-0}; y3=${3:-0}; y4=${4:-0}; y5=${5:-0}
+      d23=$(( y2 > y3 ? y2 - y3 : y3 - y2 ))
+      d34=$(( y3 > y4 ? y3 - y4 : y4 - y3 ))
+      d45=$(( y4 > y5 ? y4 - y5 : y5 - y4 ))
+      if [ "$d23" -le 2 ] && [ "$d34" -le 2 ] && [ "$d45" -le 2 ]; then
+        echo "[DISCARD] Fotograma con barrido vertical (smear/macroblocks corruptos) descartado para [${CAMERA_NAME}] ($FILE - Rows: $y1 $y2 $y3 $y4 $y5)"
+        rm -f "$FILE"
+        exit 0
+      fi
+    fi
   fi
 fi
 
