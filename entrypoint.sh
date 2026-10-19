@@ -17,14 +17,9 @@ stream_localhost off
 webcontrol_port 8083
 webcontrol_localhost off
 picture_output on
-output_pictures best
 picture_filename %Y-%m-%d_%H-%M-%S
 target_dir /tmp/motion_images
-noise 32
-noise_tune on
-despeckle_filter EedDl
-notification_timeout 60
-gap 10
+event_gap 10
 movie_output off
 camera_dir /tmp/motion/conf.d
 EOF
@@ -46,7 +41,7 @@ EOF
 camera_name ${cam_name}
 netcam_url ${rtsp_url}
 threshold ${threshold}
-min_motion_frames ${frames}
+minimum_motion_frames ${frames}
 on_picture_save /usr/local/bin/on_picture_save.sh %f ${cam_name}
 CAM_EOF
           echo "[MOTION] Cámara unificada configurada: ${cam_name} (${rtsp_url}) - Umbral: ${threshold}px"
@@ -65,7 +60,7 @@ CAM_EOF
 camera_name ${DEFAULT_NAME}
 netcam_url ${DEFAULT_URL}
 threshold ${THRESHOLD:-350}
-min_motion_frames ${MIN_MOTION_FRAMES:-2}
+minimum_motion_frames ${MIN_MOTION_FRAMES:-2}
 on_picture_save /usr/local/bin/on_picture_save.sh %f ${DEFAULT_NAME}
 DEF_EOF
     echo "[MOTION] Modo fallback/local: ${DEFAULT_NAME} (${DEFAULT_URL})"
@@ -99,7 +94,7 @@ generate_configs "$RESP"
       if [ -n "$LAST_HASH" ] && [ "$NEW_HASH" != "$LAST_HASH" ]; then
         echo "[MOTION DETECTOR] Cambio detectado en configuración de cámaras. Reconfigurando en caliente..."
         generate_configs "$NEW_RESP"
-        curl -s http://localhost:8083/0/action/restart >/dev/null 2>&1 || true
+        curl -s http://127.0.0.1:8083/0/action/restart >/dev/null 2>&1 || true
       fi
       LAST_HASH="$NEW_HASH"
     fi
