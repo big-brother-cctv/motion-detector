@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.14.0...v1.15.0) (2026-10-19)
+
+
+### Features
+
+* add vertical packet loss smear detection and update motion framerate configuration ([f3738eb](https://github.com/big-brother-cctv/motion-detector/commit/f3738eb26c3f2d7c45f7af3c5a2487e3947342a6))
+
 ## [1.14.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.13.0...v1.14.0) (2026-10-19)
 
 
