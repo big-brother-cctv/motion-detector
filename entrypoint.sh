@@ -49,6 +49,9 @@ EOF
         cam_res=$(echo "$json" | jq -r ".cameras[$i].resolution // empty")
         threshold=$(echo "$json" | jq -r ".cameras[$i].threshold // 350")
         frames=$(echo "$json" | jq -r ".cameras[$i].frames // 2")
+        cooldown=$(echo "$json" | jq -r ".cameras[$i].cooldown // 15")
+        ai_mode=$(echo "$json" | jq -r ".cameras[$i].aiMode // \"all\"")
+        ai_conf=$(echo "$json" | jq -r ".cameras[$i].aiConfidence // 0.28")
         enabled=$(echo "$json" | jq -r ".cameras[$i].enabled // true")
 
         if [ "$enabled" = "true" ] && [ -n "$cam_name" ]; then
@@ -77,9 +80,9 @@ netcam_params rtsp_transport=tcp
 threshold ${threshold}
 minimum_motion_frames ${frames}
 picture_output best
-on_picture_save /usr/local/bin/on_picture_save.sh %f ${cam_name}
+on_picture_save /usr/local/bin/on_picture_save.sh %f ${cam_name} ${ai_conf} ${ai_mode} ${cooldown}
 CAM_EOF
-          echo "[MOTION] Cámara unificada configurada: ${cam_name} (ID: ${cam_id}, ${rtsp_url}, res: nativa) - Umbral: ${threshold}px, 30fps"
+          echo "[MOTION] Cámara unificada configurada: ${cam_name} (ID: ${cam_id}, res: nativa) - Umbral: ${threshold}px, IA: ${ai_mode} (${ai_conf})"
           configured=$((configured + 1))
         fi
         i=$((i + 1))

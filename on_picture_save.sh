@@ -2,8 +2,15 @@
 
 FILE=$1
 CAMERA_NAME="${2:-${CAMERA_NAME:-camera}}"
+AI_CONF="${3:-${AI_CONF_THRESHOLD:-0.28}}"
+AI_MODE="${4:-${AI_MODE:-all}}"
+COOLDOWN_ARG="${5:-}"
+if [ -n "$COOLDOWN_ARG" ] && [ "$COOLDOWN_ARG" -gt 0 ] 2>/dev/null; then
+  COOLDOWN_SECONDS="$COOLDOWN_ARG"
+else
+  COOLDOWN_SECONDS="${COOLDOWN_SECONDS:-15}"
+fi
 COOLDOWN_FILE="/tmp/motion_last_notification_${CAMERA_NAME}"
-COOLDOWN_SECONDS="${COOLDOWN_SECONDS:-15}"
 API_URL="${API_URL:-http://api:8080/api/alerts}"
 INTERNAL_TOKEN="${INTERNAL_TOKEN:-internal-token-pro}"
 
@@ -105,22 +112,45 @@ if [ "$diff" -ge "$COOLDOWN_SECONDS" ]; then
   # -------------------------------------------------------------
   # Filtro de Inteligencia Artificial (YOLOv8 Nano en CPU)
   # -------------------------------------------------------------
-  AI_ENABLED="${AI_ENABLED:-true}"
+  AI_ENABLED="true"
+  if [ "$AI_MODE" = "none" ] || [ "$AI_MODE" = "disabled" ]; then
+    AI_ENABLED="false"
+  fi
+
+  TARGET_CLASSES="person,car,truck,bus,motorcycle,bicycle,dog,cat"
+  case "$AI_MODE" in
+    person)
+      TARGET_CLASSES="person"
+      ;;
+    vehicles)
+      TARGET_CLASSES="person,car,truck,bus,motorcycle,bicycle"
+      ;;
+    animals)
+      TARGET_CLASSES="dog,cat,bird,horse,sheep,cow"
+      ;;
+    none|disabled)
+      TARGET_CLASSES=""
+      ;;
+    *)
+      TARGET_CLASSES="person,car,truck,bus,motorcycle,bicycle,dog,cat"
+      ;;
+  esac
+
   LABEL="motion"
 
   if [ "$AI_ENABLED" = "true" ] && which python3 >/dev/null 2>&1 && [ -f /usr/local/bin/detect_objects.py ]; then
-    AI_OUTPUT=$(python3 /usr/local/bin/detect_objects.py "$FILE" 2>/dev/null)
+    AI_OUTPUT=$(AI_CONF_THRESHOLD="$AI_CONF" AI_TARGET_CLASSES="$TARGET_CLASSES" python3 /usr/local/bin/detect_objects.py "$FILE" 2>/dev/null)
     AI_STATUS=$?
 
     if [ "$AI_STATUS" -eq 1 ]; then
-      echo "[AI FILTER] Snapshot descartado para [${CAMERA_NAME}]: No se detectó ninguna persona o vehículo relevante."
+      echo "[AI FILTER] Snapshot descartado para [${CAMERA_NAME}] (Modo: ${AI_MODE}, Conf: ${AI_CONF}): No se detectó ${TARGET_CLASSES}."
       rm -f "$FILE"
       exit 0
     elif [ "$AI_STATUS" -eq 0 ]; then
       DETECTED_LABEL=$(echo "$AI_OUTPUT" | grep "^LABEL=" | cut -d= -f2-)
       if [ -n "$DETECTED_LABEL" ]; then
         LABEL="$DETECTED_LABEL"
-        echo "[AI FILTER] ¡Objetivo confirmado para [${CAMERA_NAME}]!: $LABEL"
+        echo "[AI FILTER] ¡Objetivo confirmado para [${CAMERA_NAME}]!: $LABEL (Modo: ${AI_MODE})"
       fi
     fi
   fi
