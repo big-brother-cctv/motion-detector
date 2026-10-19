@@ -1,7 +1,16 @@
 #!/bin/sh
 set -e
 
-mkdir -p /tmp/motion_images /tmp/motion/conf.d
+mkdir -p /tmp/motion_images /tmp/motion/conf.d /tmp/models /etc/motion/models
+
+# Preparar modelo YOLOv8n ONNX ligero si no existe
+if [ ! -f /etc/motion/models/yolov8n.onnx ] && [ ! -f /tmp/models/yolov8n.onnx ]; then
+  echo "[AI SETUP] Descargando modelo ligero YOLOv8n ONNX para filtro de personas/vehículos..."
+  curl -sL --connect-timeout 10 -o /tmp/models/yolov8n.onnx https://huggingface.co/Xuban/yolo_weights_database/resolve/main/yolov8n.onnx 2>/dev/null || true
+fi
+if [ -f /tmp/models/yolov8n.onnx ] && [ ! -f /etc/motion/models/yolov8n.onnx ]; then
+  ln -sf /tmp/models/yolov8n.onnx /etc/motion/models/yolov8n.onnx 2>/dev/null || true
+fi
 
 API_URL="${API_URL:-http://api:8080/api/alerts}"
 API_BASE=$(echo "$API_URL" | sed 's|/api/alerts.*||')

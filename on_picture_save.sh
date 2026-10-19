@@ -62,17 +62,40 @@ last=$(cat "$COOLDOWN_FILE" 2>/dev/null || echo 0)
 diff=$((now - last))
 
 if [ "$diff" -ge "$COOLDOWN_SECONDS" ]; then
+  # -------------------------------------------------------------
+  # Filtro de Inteligencia Artificial (YOLOv8 Nano en CPU)
+  # -------------------------------------------------------------
+  AI_ENABLED="${AI_ENABLED:-true}"
+  LABEL="motion"
+
+  if [ "$AI_ENABLED" = "true" ] && which python3 >/dev/null 2>&1 && [ -f /usr/local/bin/detect_objects.py ]; then
+    AI_OUTPUT=$(python3 /usr/local/bin/detect_objects.py "$FILE" 2>/dev/null)
+    AI_STATUS=$?
+
+    if [ "$AI_STATUS" -eq 1 ]; then
+      echo "[AI FILTER] Snapshot descartado para [${CAMERA_NAME}]: No se detectó ninguna persona o vehículo relevante."
+      rm -f "$FILE"
+      exit 0
+    elif [ "$AI_STATUS" -eq 0 ]; then
+      DETECTED_LABEL=$(echo "$AI_OUTPUT" | grep "^LABEL=" | cut -d= -f2-)
+      if [ -n "$DETECTED_LABEL" ]; then
+        LABEL="$DETECTED_LABEL"
+        echo "[AI FILTER] ¡Objetivo confirmado para [${CAMERA_NAME}]!: $LABEL"
+      fi
+    fi
+  fi
+
   # Alerta local 100% self-hosted
-  echo "Enviando snapshot de [${CAMERA_NAME}] ($FILE) a Big Brother API: $API_URL"
+  echo "Enviando snapshot de [${CAMERA_NAME}] ($FILE) [Label: ${LABEL}] a Big Brother API: $API_URL"
   curl -s -F "image=@${FILE}" \
        -F "camera_name=${CAMERA_NAME}" \
-       -F "label=motion" \
+       -F "label=${LABEL}" \
        -F "token=${INTERNAL_TOKEN}" \
        "$API_URL"
 
   if [ -n "$DISCORD_WEBHOOK" ]; then
     curl -s -F "file=@${FILE}" \
-         -F "content=🚨 Movimiento detectado en ${CAMERA_NAME}! 📸" \
+         -F "content=🚨 Alerta de Seguridad [${CAMERA_NAME}] - Detectado: **${LABEL}** 📸" \
          "$DISCORD_WEBHOOK" >/dev/null 2>&1 || true
   fi
 
