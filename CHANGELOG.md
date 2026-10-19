@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.1](https://github.com/big-brother-cctv/motion-detector/compare/v1.8.0...v1.8.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* update motion configuration parameters and localhost IP in entrypoint script ([e83dad9](https://github.com/big-brother-cctv/motion-detector/commit/e83dad95dbce4c8e61b45ffa68a7defff0bfba5e))
+
 ## [1.8.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.7.1...v1.8.0) (2026-10-18)
 
 
