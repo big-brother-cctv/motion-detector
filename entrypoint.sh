@@ -20,7 +20,7 @@ generate_configs() {
   json="$1"
   rm -f /tmp/motion/conf.d/*.conf
 
-  cat <<EOF > /tmp/motion.conf
+    cat <<EOF > /tmp/motion.conf
 daemon off
 stream_localhost off
 webcontrol_port 8083
@@ -29,8 +29,8 @@ picture_output best
 event_gap 10
 movie_output off
 camera_dir /tmp/motion/conf.d
-framerate 5
-netcam_params rtsp_transport=tcp,buffer_size=2048000,max_delay=500000
+framerate 10
+netcam_params rtsp_transport=tcp
 noise_level 32
 noise_tune on
 despeckle_filter EedDl
@@ -72,15 +72,14 @@ camera_name ${cam_name}
 target_dir /tmp/motion_images/${cam_name}
 picture_filename ${cam_name}_%Y-%m-%d_%H-%M-%S
 netcam_url ${rtsp_url}
-framerate 5
-netcam_params rtsp_transport=tcp,buffer_size=2048000,max_delay=500000
-${res_config}
+framerate 10
+netcam_params rtsp_transport=tcp
 threshold ${threshold}
 minimum_motion_frames ${frames}
 picture_output best
 on_picture_save /usr/local/bin/on_picture_save.sh %f ${cam_name}
 CAM_EOF
-          echo "[MOTION] Cámara unificada configurada: ${cam_name} (ID: ${cam_id}, ${rtsp_url}, res: ${cam_res:-auto}) - Umbral: ${threshold}px, 5fps"
+          echo "[MOTION] Cámara unificada configurada: ${cam_name} (ID: ${cam_id}, ${rtsp_url}, res: nativa) - Umbral: ${threshold}px, 30fps"
           configured=$((configured + 1))
         fi
         i=$((i + 1))
@@ -99,8 +98,8 @@ camera_name ${DEFAULT_NAME}
 target_dir /tmp/motion_images/${DEFAULT_NAME}
 picture_filename ${DEFAULT_NAME}_%Y-%m-%d_%H-%M-%S
 netcam_url ${DEFAULT_URL}
-framerate 5
-netcam_params rtsp_transport=tcp,buffer_size=2048000,max_delay=500000
+framerate 10
+netcam_params rtsp_transport=tcp
 threshold ${THRESHOLD:-350}
 minimum_motion_frames ${MIN_MOTION_FRAMES:-2}
 picture_output best

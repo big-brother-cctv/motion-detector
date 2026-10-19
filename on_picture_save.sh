@@ -76,6 +76,24 @@ if which ffmpeg >/dev/null 2>&1 && which od >/dev/null 2>&1; then
         fi
       done
     fi
+
+    # Detectar y descartar barridos / smears verticales de pérdida de paquetes (columnas idénticas de arriba a abajo)
+    GRID_3X3=$(ffmpeg -nostdin -v error -i "$FILE" -vf "scale=3:3" -f rawvideo -pix_fmt gray - 2>/dev/null | od -An -t u1 2>/dev/null)
+    if [ -n "$GRID_3X3" ]; then
+      set -- $GRID_3X3
+      r11=${1:-0}; r12=${2:-0}; r13=${3:-0}
+      r21=${4:-0}; r22=${5:-0}; r23=${6:-0}
+      r31=${7:-0}; r32=${8:-0}; r33=${9:-0}
+      d1=$(( r11 > r31 ? r11 - r31 : r31 - r11 ))
+      d2=$(( r12 > r32 ? r12 - r32 : r32 - r12 ))
+      d3=$(( r13 > r33 ? r13 - r33 : r33 - r13 ))
+      total_v_delta=$(( d1 + d2 + d3 ))
+      if [ "$total_v_delta" -le 8 ] || { [ "$d1" -le 4 ] && [ "$d2" -le 4 ] && [ "$d3" -le 4 ]; }; then
+        echo "[DISCARD] Fotograma con barrido vertical (smear sin variación en columnas) descartado para [${CAMERA_NAME}] ($FILE - Deltas: $d1 $d2 $d3 Total: $total_v_delta)"
+        rm -f "$FILE"
+        exit 0
+      fi
+    fi
   fi
 fi
 
