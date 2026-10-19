@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.8.1...v1.9.0) (2026-10-19)
+
+
+### Features
+
+* organize motion capture directories by camera and update notification messages with camera details ([d702268](https://github.com/big-brother-cctv/motion-detector/commit/d70226885c6af3fb64e8edd761e5ac83102182db))
+
 ## [1.8.1](https://github.com/big-brother-cctv/motion-detector/compare/v1.8.0...v1.8.1) (2026-10-19)
 
 
