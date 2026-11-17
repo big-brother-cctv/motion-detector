@@ -16,6 +16,40 @@ API_URL="${API_URL:-http://api:8080/api/alerts}"
 API_BASE=$(echo "$API_URL" | sed 's|/api/alerts.*||')
 CONFIG_URL="${API_BASE}/api/motion/config"
 
+if [ -z "${INTERNAL_TOKEN:-}" ]; then
+  echo "[MOTION DETECTOR] AVISO: INTERNAL_TOKEN no definido; la API rechazará la consulta de configuración y las alertas."
+fi
+
+fetch_config() {
+  curl -sf --connect-timeout "$1" -H "Authorization: Bearer ${INTERNAL_TOKEN:-}" "${CONFIG_URL}" 2>/dev/null || true
+}
+
+# Los valores vienen de la API y se escriben en ficheros de configuración de Motion y en la
+# línea de comando de on_picture_save: NUNCA se deben aceptar sin validar (inyección de directivas).
+# Se usan patrones `case` (no grep) porque grep valida línea a línea y un valor con
+# salto de línea ("ab\non_event_start ...") pasaría la comprobación.
+is_safe_name() {
+  case "$1" in ""|?|*[!A-Za-z0-9_.-]*) return 1 ;; esac
+  [ "${#1}" -le 48 ]
+}
+is_uint() {
+  case "$1" in ""|*[!0-9]*) return 1 ;; esac
+  [ "${#1}" -le 7 ]
+}
+is_decimal() {
+  case "$1" in ""|.*|*.|*.*.*|*[!0-9.]*) return 1 ;; esac
+  return 0
+}
+is_ai_mode() {
+  case "$1" in all|person|vehicles|animals|none|disabled) return 0 ;; esac
+  return 1
+}
+is_rtsp_url() {
+  case "$1" in rtsp://?*|rtsps://?*) ;; *) return 1 ;; esac
+  case "$1" in *[!A-Za-z0-9._~:@%/?=\&+-]*) return 1 ;; esac
+  return 0
+}
+
 generate_configs() {
   json="$1"
   rm -f /tmp/motion/conf.d/*.conf
@@ -39,22 +73,29 @@ EOF
 
   configured=0
   if [ -n "$json" ] && which jq >/dev/null 2>&1; then
-    count=$(echo "$json" | jq -r '.cameras | length' 2>/dev/null || echo 0)
+    count=$(printf '%s' "$json" | jq -r '.cameras | length' 2>/dev/null || echo 0)
     if [ "$count" -gt 0 ]; then
       i=0
       while [ "$i" -lt "$count" ]; do
-        cam_name=$(echo "$json" | jq -r ".cameras[$i].name // empty")
-        cam_id=$(echo "$json" | jq -r ".cameras[$i].id // ($i + 1)")
-        rtsp_url=$(echo "$json" | jq -r ".cameras[$i].rtspUrl // empty")
-        cam_res=$(echo "$json" | jq -r ".cameras[$i].resolution // empty")
-        threshold=$(echo "$json" | jq -r ".cameras[$i].threshold // 350")
-        frames=$(echo "$json" | jq -r ".cameras[$i].frames // 2")
-        cooldown=$(echo "$json" | jq -r ".cameras[$i].cooldown // 15")
-        ai_mode=$(echo "$json" | jq -r ".cameras[$i].aiMode // \"all\"")
-        ai_conf=$(echo "$json" | jq -r ".cameras[$i].aiConfidence // 0.28")
-        enabled=$(echo "$json" | jq -r ".cameras[$i].enabled // true")
+        cam_name=$(printf '%s' "$json" | jq -r ".cameras[$i].name // empty")
+        cam_id=$(printf '%s' "$json" | jq -r ".cameras[$i].id // ($i + 1)")
+        rtsp_url=$(printf '%s' "$json" | jq -r ".cameras[$i].rtspUrl // empty")
+        cam_res=$(printf '%s' "$json" | jq -r ".cameras[$i].resolution // empty")
+        threshold=$(printf '%s' "$json" | jq -r ".cameras[$i].threshold // 350")
+        frames=$(printf '%s' "$json" | jq -r ".cameras[$i].frames // 2")
+        cooldown=$(printf '%s' "$json" | jq -r ".cameras[$i].cooldown // 15")
+        ai_mode=$(printf '%s' "$json" | jq -r ".cameras[$i].aiMode // \"all\"")
+        ai_conf=$(printf '%s' "$json" | jq -r ".cameras[$i].aiConfidence // 0.28")
+        enabled=$(printf '%s' "$json" | jq -r ".cameras[$i].enabled // true")
 
         if [ "$enabled" = "true" ] && [ -n "$cam_name" ]; then
+          if ! is_safe_name "$cam_name" || ! is_uint "$cam_id" || ! is_rtsp_url "$rtsp_url" \
+             || ! is_uint "$threshold" || ! is_uint "$frames" || ! is_uint "$cooldown" \
+             || ! is_decimal "$ai_conf" || ! is_ai_mode "$ai_mode"; then
+            echo "[MOTION][SECURITY] Cámara #$i ignorada: valores no válidos en la configuración recibida de la API"
+            i=$((i + 1))
+            continue
+          fi
           mkdir -p "/tmp/motion_images/${cam_name}"
           
           if [ -z "$cam_res" ] && which ffprobe >/dev/null 2>&1; then
@@ -119,7 +160,7 @@ echo "=========================================================="
 
 RESP=""
 for attempt in 1 2 3; do
-  RESP=$(curl -s --connect-timeout 2 "${CONFIG_URL}" 2>/dev/null || true)
+  RESP=$(fetch_config 2)
   if [ -n "$RESP" ]; then
     break
   fi
@@ -133,7 +174,7 @@ generate_configs "$RESP"
   LAST_HASH=$(echo "$RESP" | md5sum 2>/dev/null | awk '{print $1}')
   while true; do
     sleep 15
-    NEW_RESP=$(curl -s --connect-timeout 3 "${CONFIG_URL}" 2>/dev/null || true)
+    NEW_RESP=$(fetch_config 3)
     if [ -n "$NEW_RESP" ]; then
       NEW_HASH=$(echo "$NEW_RESP" | md5sum 2>/dev/null | awk '{print $1}')
       if [ -n "$LAST_HASH" ] && [ "$NEW_HASH" != "$LAST_HASH" ]; then

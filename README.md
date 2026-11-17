@@ -7,7 +7,7 @@ Microservicio centralizado y autónomo de detección de movimiento basado en **M
 ## 🌟 Características
 
 - **Daemon Multi-Cámara Centralizado**: Un único contenedor gestiona múltiples fuentes de vídeo concurrentes mediante subprocesos aislados (`camera_id`), eliminando la necesidad de desplegar un pod por cada cámara.
-- **Sincronización Dinámica con la API**: Consulta periódicamente el endpoint `/api/motion/config` de la API Core para autoconfigurar parámetros individuales por cámara (umbral de píxeles, frames mínimos de movimiento, URL RTSP).
+- **Sincronización Dinámica con la API**: Consulta periódicamente (autenticado con `INTERNAL_TOKEN`) el endpoint `/api/motion/config` de la API Core para autoconfigurar parámetros individuales por cámara (umbral de píxeles, frames mínimos de movimiento, URL RTSP).
 - **Aislamiento Total de Capturas**: Cada hilo de cámara dispone de su propio directorio dedicado (`/tmp/motion_images/<camera_name>/`) y nomenclatura prefijada (`<camera_name>_%Y-%m-%d_%H-%M-%S.jpg`), evitando colisiones y condiciones de carrera.
 - **Gestión Inteligente de Almacenamiento**: Limpieza inmediata (`rm -f "$FILE"`) tras el procesamiento o descarte por cooldown, con purga de seguridad cada 2 minutos para garantizar cero acumulación de residuos en disco.
 - **Doble Notificación en Tiempo Real**:
@@ -36,7 +36,7 @@ flowchart LR
 | Variable | Descripción | Valor por Defecto |
 |---|---|---|
 | `API_URL` | Endpoint de ingesta de alertas de la API Core | `http://api:8080/api/alerts` |
-| `INTERNAL_TOKEN` | Token secreto compartido para autenticación interna | `internal-token-pro` |
+| `INTERNAL_TOKEN` | **Obligatorio.** Token interno compartido con la API (consulta de `/api/motion/config` y envío de alertas) | — |
 | `COOLDOWN_SECONDS` | Intervalo mínimo (segundos) entre alertas consecutivas por cámara | `15` |
 | `DISCORD_WEBHOOK` | URL de webhook de Discord para alertas externas (opcional) | `""` |
 | `CAMERA_NAME` | Nombre de la cámara para el modo fallback | `camera` |
@@ -66,7 +66,7 @@ docker build -t big-brother-cctv/motion-detector:latest .
 # Ejecutar con streaming local
 docker run -d --name motion-detector \
   -e API_URL="http://host.docker.internal:8080/api/alerts" \
-  -e INTERNAL_TOKEN="internal-token-pro" \
+  -e INTERNAL_TOKEN="<mismo valor que en la API>" \
   -e NETCAM_URL="rtsp://host.docker.internal:8554/camera" \
   -e COOLDOWN_SECONDS="15" \
   big-brother-cctv/motion-detector:latest
