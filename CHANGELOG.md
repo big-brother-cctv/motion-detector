@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.18.0...v2.0.0) (2026-11-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* INTERNAL_TOKEN is now required.
+
+### Bug Fixes
+
+* authenticate config fetch and validate camera config values ([dd1585c](https://github.com/big-brother-cctv/motion-detector/commit/dd1585c56ba89c76221046e5a3170d1a7e760009))
+
 ## [1.18.0](https://github.com/big-brother-cctv/motion-detector/compare/v1.17.1...v1.18.0) (2026-10-19)
 
 
