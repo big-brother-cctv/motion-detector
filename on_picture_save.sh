@@ -12,7 +12,7 @@ else
 fi
 COOLDOWN_FILE="/tmp/motion_last_notification_${CAMERA_NAME}"
 API_URL="${API_URL:-http://api:8080/api/alerts}"
-INTERNAL_TOKEN="${INTERNAL_TOKEN:-internal-token-pro}"
+INTERNAL_TOKEN="${INTERNAL_TOKEN:-}"
 
 if [ -z "$FILE" ] || [ ! -f "$FILE" ] || [ ! -s "$FILE" ]; then
   exit 0
@@ -157,10 +157,10 @@ if [ "$diff" -ge "$COOLDOWN_SECONDS" ]; then
 
   # Alerta local 100% self-hosted
   echo "Enviando snapshot de [${CAMERA_NAME}] ($FILE) [Label: ${LABEL}] a Big Brother API: $API_URL"
-  curl -s -F "image=@${FILE}" \
+  curl -s -H "X-Internal-Token: ${INTERNAL_TOKEN}" \
+       -F "image=@${FILE}" \
        -F "camera_name=${CAMERA_NAME}" \
        -F "label=${LABEL}" \
-       -F "token=${INTERNAL_TOKEN}" \
        "$API_URL"
 
   if [ -n "$DISCORD_WEBHOOK" ]; then
